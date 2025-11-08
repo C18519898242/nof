@@ -8,6 +8,7 @@ from typing import Dict, Any, Type
 from .target_interface import IDataTarget
 from .mock_adapter import MockAdapter
 from .coinbase_adapter import CoinbaseAdapter
+from .binance_adapter import BinanceAdapter
 from ..utils.logger import get_logger
 
 
@@ -17,10 +18,10 @@ class AdapterFactory:
     _adapters: Dict[str, Type[IDataTarget]] = {
         'mock': MockAdapter,
         'coinbase': CoinbaseAdapter,
+        'binance': BinanceAdapter,
         # 未来的适配器将在这里注册
         # 'csv': CSVAdapter,
         # 'yahoo': YahooFinanceAdapter,
-        # 'binance': BinanceAdapter,
         # 'database': DatabaseAdapter,
     }
     
