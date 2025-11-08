@@ -1,0 +1,98 @@
+"""
+基础回测示例
+
+演示如何使用回测框架进行基本的回测。
+"""
+
+import sys
+import os
+from datetime import datetime, timedelta
+
+# 添加项目根目录到Python路径
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from src.core.engine import BacktestEngine
+from src.utils.config_manager import ConfigManager
+from src.utils.logger import setup_logging
+
+
+def main():
+    """主函数"""
+    # 设置日志
+    logging_config = {
+        'level': 'INFO',
+        'file': './logs/example_backtest.log'
+    }
+    logger = setup_logging(logging_config)
+    logger.info("开始基础回测示例")
+    
+    try:
+        # 加载配置
+        config_manager = ConfigManager()
+        
+        # 创建回测引擎
+        engine = BacktestEngine(config_manager.config)
+        
+        # 设置数据适配器（使用Mock适配器进行演示）
+        engine.set_data_adapter('mock')
+        
+        # 设置策略
+        engine.set_strategy('momentum', period=15, threshold=0.03)
+        
+        # 设置回测时间范围
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=365)  # 最近一年的数据
+        
+        # 加载数据
+        engine.load_data('AAPL', start_date, end_date)
+        
+        # 运行回测
+        result = engine.run_backtest()
+        
+        # 生成报告
+        report = engine.generate_report()
+        
+        # 打印结果
+        print("\n" + "="*50)
+        print("回测结果")
+        print("="*50)
+        
+        summary = report['summary']
+        print(f"初始资金: ${summary['start_value']:,.2f}")
+        print(f"最终资金: ${summary['final_value']:,.2f}")
+        print(f"总收益率: {summary['total_return']}")
+        print(f"夏普比率: {summary['sharpe_ratio']}")
+        print(f"最大回撤: {summary['max_drawdown']}")
+        print(f"总交易次数: {summary['total_trades']}")
+        print(f"胜率: {summary['win_rate']}")
+        
+        print("\n" + "="*50)
+        print("性能指标")
+        print("="*50)
+        
+        performance = report['performance']
+        print(f"年化收益率: {performance['annual_return']}")
+        print(f"月化收益率: {performance['monthly_return']}")
+        print(f"日收益率: {performance['daily_return']}")
+        
+        print("\n" + "="*50)
+        print("风险指标")
+        print("="*50)
+        
+        risk_metrics = report['risk_metrics']
+        print(f"最大回撤: {risk_metrics['max_drawdown']}")
+        print(f"夏普比率: {risk_metrics['sharpe_ratio']}")
+        print(f"波动率: {risk_metrics['volatility']}")
+        
+        logger.info("基础回测示例完成")
+        
+    except Exception as e:
+        logger.error(f"回测示例失败: {e}")
+        print(f"错误: {e}")
+        return 1
+    
+    return 0
+
+
+if __name__ == "__main__":
+    exit(main())
