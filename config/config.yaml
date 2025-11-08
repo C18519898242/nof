@@ -15,11 +15,12 @@ data_adapters:
     rate_limit: 100  # 每分钟请求数
   
   coinbase:
-    enabled: false
+    enabled: true
     api_key: "${COINBASE_API_KEY}"
-    secret_key: "${COINBASE_SECRET_KEY}"
+    api_secret: "${COINBASE_SECRET_KEY}"
+    sandbox: false
     timeout: 30
-    rate_limit: 10
+    rate_limit_delay: 0.1
   
   binance:
     enabled: false

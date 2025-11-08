@@ -223,11 +223,11 @@ class BacktestEngine:
                         self.result.win_rate = (won_trades / total_trades) * 100
             
             self.logger.info("回测运行完成")
-            self.logger.info(f"总收益率: {self.result.total_return:.2%}")
-            self.logger.info(f"夏普比率: {self.result.sharpe_ratio:.2f}")
-            self.logger.info(f"最大回撤: {self.result.max_drawdown:.2%}")
+            self.logger.info(f"总收益率: {self.result.total_return:.2%}" if self.result.total_return else "总收益率: 0.00%")
+            self.logger.info(f"夏普比率: {self.result.sharpe_ratio:.2f}" if self.result.sharpe_ratio else "夏普比率: 0.00")
+            self.logger.info(f"最大回撤: {self.result.max_drawdown:.2%}" if self.result.max_drawdown else "最大回撤: 0.00%")
             self.logger.info(f"总交易次数: {self.result.total_trades}")
-            self.logger.info(f"胜率: {self.result.win_rate:.1f}%")
+            self.logger.info(f"胜率: {self.result.win_rate:.1f}%" if self.result.win_rate else "胜率: 0.0%")
             
             return self.result
             
@@ -246,24 +246,40 @@ class BacktestEngine:
             self.logger.warning("没有可用的回测结果")
             return {}
         
+        # 安全格式化函数，处理None值
+        def safe_percent(value, decimals=2):
+            if value is None or value == 0:
+                return "0.00%"
+            return f"{value:.{decimals}%}"
+        
+        def safe_float(value, decimals=2):
+            if value is None:
+                return "0.00"
+            return f"{value:.{decimals}f}"
+        
+        def safe_int(value):
+            if value is None:
+                return 0
+            return int(value)
+        
         report = {
             'summary': {
-                'start_value': self.result.start_value,
-                'final_value': self.result.final_value,
-                'total_return': f"{self.result.total_return:.2%}",
-                'sharpe_ratio': f"{self.result.sharpe_ratio:.2f}",
-                'max_drawdown': f"{self.result.max_drawdown:.2%}",
-                'total_trades': self.result.total_trades,
-                'win_rate': f"{self.result.win_rate:.1f}%"
+                'start_value': safe_float(self.result.start_value, 2),
+                'final_value': safe_float(self.result.final_value, 2),
+                'total_return': safe_percent(self.result.total_return, 2),
+                'sharpe_ratio': safe_float(self.result.sharpe_ratio, 2),
+                'max_drawdown': safe_percent(self.result.max_drawdown, 2),
+                'total_trades': safe_int(self.result.total_trades),
+                'win_rate': f"{safe_float(self.result.win_rate, 1)}%"
             },
             'performance': {
-                'annual_return': f"{self.result.total_return * 252:.2%}",  # 假设年化
-                'monthly_return': f"{self.result.total_return * 21:.2%}",  # 假设月化
-                'daily_return': f"{self.result.total_return / 252:.2%}"
+                'annual_return': safe_percent(self.result.total_return * 252 if self.result.total_return else 0, 2),  # 假设年化
+                'monthly_return': safe_percent(self.result.total_return * 21 if self.result.total_return else 0, 2),  # 假设月化
+                'daily_return': safe_percent(self.result.total_return / 252 if self.result.total_return else 0, 2)
             },
             'risk_metrics': {
-                'max_drawdown': f"{self.result.max_drawdown:.2%}",
-                'sharpe_ratio': f"{self.result.sharpe_ratio:.2f}",
+                'max_drawdown': safe_percent(self.result.max_drawdown, 2),
+                'sharpe_ratio': safe_float(self.result.sharpe_ratio, 2),
                 'volatility': 'N/A'  # 需要额外计算
             }
         }
