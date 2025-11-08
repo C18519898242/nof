@@ -53,31 +53,38 @@ class BaseStrategy(bt.Strategy):
         Args:
             order: 订单对象
         """
+        # 改进价格显示
+        price_display = f"{order.price:.2f}" if order.price and order.price > 0 else "市价"
+        
         if order.status in [order.Submitted, order.Accepted]:
             if order.isbuy():
-                self.log_data(f"买单提交/接受: {order.size} @ {order.price}")
+                self.log_data(f"买单提交/接受: {order.size} @ {price_display}")
             else:
-                self.log_data(f"卖单提交/接受: {order.size} @ {order.price}")
+                self.log_data(f"卖单提交/接受: {order.size} @ {price_display}")
         
         elif order.status in [order.Completed]:
             if order.isbuy():
-                self.log_data(f"买单成交: {order.size} @ {order.price}")
+                executed_price = order.executed.price if hasattr(order, 'executed') and order.executed.price > 0 else order.price
+                executed_price_display = f"{executed_price:.2f}" if executed_price and executed_price > 0 else "市价"
+                self.log_data(f"买单成交: {order.size} @ {executed_price_display}")
                 self._position_open = True
-                self._entry_price = order.price
+                self._entry_price = executed_price
             else:
-                self.log_data(f"卖单成交: {order.size} @ {order.price}")
+                executed_price = order.executed.price if hasattr(order, 'executed') and order.executed.price > 0 else order.price
+                executed_price_display = f"{executed_price:.2f}" if executed_price and executed_price > 0 else "市价"
+                self.log_data(f"卖单成交: {order.size} @ {executed_price_display}")
                 self._position_open = False
                 self._entry_price = None
                 
             # 更新交易统计
             self._trades_count += 1
             # 这里可以添加盈亏统计逻辑
-            
+                
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
             if order.isbuy():
-                self.log_data(f"买单取消/拒绝: {order.size} @ {order.price}", "WARNING")
+                self.log_data(f"买单取消/拒绝: {order.size} @ {price_display}", "WARNING")
             else:
-                self.log_data(f"卖单取消/拒绝: {order.size} @ {order.price}", "WARNING")
+                self.log_data(f"卖单取消/拒绝: {order.size} @ {price_display}", "WARNING")
         
         self._last_order = order
     

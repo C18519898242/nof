@@ -124,8 +124,8 @@ class BacktestEngine:
         
         # 设置滑点
         slippage = self.config.get('backtest', {}).get('slippage', 0.0001)
-        # cerebro的slippage设置需要特殊处理
-        self.cerebro.broker.set_slippage_perc(slippage * 100)
+        # 修复：直接使用滑点值，不需要乘以100
+        self.cerebro.broker.set_slippage_perc(slippage)
         self.logger.info(f"滑点设置: {slippage}")
         
         # 添加分析器 - 修复配置参数

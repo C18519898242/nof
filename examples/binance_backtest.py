@@ -40,13 +40,13 @@ def main():
         
         # 设置时间范围（最近30天）
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=100)
+        start_date = end_date - timedelta(days=30)
         
         # 获取数据并运行回测
         logger.info(f"回测时间范围: {start_date.date()} 到 {end_date.date()}")
         
         # 使用BTCUSDT交易对
-        engine.load_data('BTCUSDT', start_date, end_date, interval='1h')
+        engine.load_data('BTCUSDT', start_date, end_date, interval='15m')
         
         # 运行回测
         result = engine.run_backtest()
