@@ -40,7 +40,7 @@ def main():
         
         # 设置时间范围（最近30天）
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
+        start_date = end_date - timedelta(days=100)
         
         # 获取数据并运行回测
         logger.info(f"回测时间范围: {start_date.date()} 到 {end_date.date()}")
@@ -85,6 +85,17 @@ def main():
         print(f"最大回撤: {risk_metrics.get('max_drawdown', '0%')}")
         print(f"夏普比率: {risk_metrics.get('sharpe_ratio', '0.00')}")
         print(f"波动率: {risk_metrics.get('volatility', 'N/A')}")
+        
+        # 显示投资曲线
+        print("\n" + "="*50)
+        print("投资曲线")
+        print("="*50)
+        try:
+            # 绘制回测结果图表
+            engine.plot_results(show=True)
+        except Exception as e:
+            logger.error(f"绘制投资曲线失败: {e}")
+            print(f"绘制图表失败: {e}")
         
         logger.info("币安回测示例完成")
         

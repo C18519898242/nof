@@ -6,6 +6,7 @@
 
 import backtrader as bt
 import pandas as pd
+import matplotlib.pyplot as plt
 from datetime import datetime
 from typing import Dict, Any, Optional
 from ..utils.logger import get_logger
@@ -127,10 +128,10 @@ class BacktestEngine:
         self.cerebro.broker.set_slippage_perc(slippage * 100)
         self.logger.info(f"滑点设置: {slippage}")
         
-        # 添加分析器
-        self.cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe')
+        # 添加分析器 - 修复配置参数
+        self.cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe', timeframe=bt.TimeFrame.Days, riskfreerate=0.0)
         self.cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
-        self.cerebro.addanalyzer(bt.analyzers.Returns, _name='returns')
+        self.cerebro.addanalyzer(bt.analyzers.Returns, _name='returns', timeframe=bt.TimeFrame.Days)
         self.cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='trades')
         
         self.logger.info("Cerebro引擎设置完成")
@@ -208,10 +209,15 @@ class BacktestEngine:
                 if hasattr(strategy.analyzers, 'sharpe'):
                     sharpe = strategy.analyzers.sharpe.get_analysis()
                     self.result.sharpe_ratio = sharpe.get('sharperatio', 0.0)
+                    self.logger.debug(f"夏普比率分析结果: {sharpe}")
                 
                 if hasattr(strategy.analyzers, 'drawdown'):
                     drawdown = strategy.analyzers.drawdown.get_analysis()
-                    self.result.max_drawdown = drawdown.get('max', {}).get('drawdown', 0.0)
+                    # 修复最大回撤计算
+                    max_dd = drawdown.get('max', {})
+                    max_drawdown = max_dd.get('drawdown', 0.0) / 100.0 if max_dd else 0.0
+                    self.result.max_drawdown = max_drawdown
+                    self.logger.debug(f"最大回撤分析结果: {drawdown}, 计算值: {max_drawdown}")
                 
                 if hasattr(strategy.analyzers, 'trades'):
                     trades = strategy.analyzers.trades.get_analysis()
@@ -221,6 +227,7 @@ class BacktestEngine:
                     self.result.total_trades = total_trades
                     if total_trades > 0:
                         self.result.win_rate = (won_trades / total_trades) * 100
+                    self.logger.debug(f"交易分析结果: {trades}")
             
             self.logger.info("回测运行完成")
             self.logger.info(f"总收益率: {self.result.total_return:.2%}" if self.result.total_return else "总收益率: 0.00%")
@@ -300,22 +307,28 @@ class BacktestEngine:
             return
         
         try:
-            # 设置图表样式
-            plt.style.use('seaborn-v0_8')
+            # 设置图表样式 - 使用兼容的样式
+            try:
+                plt.style.use('seaborn-v0_8')
+            except:
+                try:
+                    plt.style.use('seaborn')
+                except:
+                    plt.style.use('default')
             
             # 绘制图表
             fig = self.cerebro.plot(style='candlestick', 
                                  barup='green', 
                                  bardown='red',
                                  volume=True,
-                                 figsize=(15, 8))
+                                 figsize=(15, 8),
+                                 show=show)  # 直接控制是否显示
             
             if save_path:
                 fig[0][0].savefig(save_path, dpi=300, bbox_inches='tight')
                 self.logger.info(f"图表已保存: {save_path}")
             
             if show:
-                import matplotlib.pyplot as plt
                 plt.show()
             
         except Exception as e:

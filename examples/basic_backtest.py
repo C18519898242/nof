@@ -57,32 +57,32 @@ def main():
         print("回测结果")
         print("="*50)
         
-        summary = report['summary']
-        print(f"初始资金: ${summary['start_value']:,.2f}")
-        print(f"最终资金: ${summary['final_value']:,.2f}")
-        print(f"总收益率: {summary['total_return']}")
-        print(f"夏普比率: {summary['sharpe_ratio']}")
-        print(f"最大回撤: {summary['max_drawdown']}")
-        print(f"总交易次数: {summary['total_trades']}")
-        print(f"胜率: {summary['win_rate']}")
+        summary = report.get('summary', {})
+        print(f"初始资金: ${summary.get('start_value', '0.00')}")
+        print(f"最终资金: ${summary.get('final_value', '0.00')}")
+        print(f"总收益率: {summary.get('total_return', '0.00%')}")
+        print(f"夏普比率: {summary.get('sharpe_ratio', '0.00')}")
+        print(f"最大回撤: {summary.get('max_drawdown', '0.00%')}")
+        print(f"总交易次数: {summary.get('total_trades', 0)}")
+        print(f"胜率: {summary.get('win_rate', '0.00%')}")
         
         print("\n" + "="*50)
         print("性能指标")
         print("="*50)
         
-        performance = report['performance']
-        print(f"年化收益率: {performance['annual_return']}")
-        print(f"月化收益率: {performance['monthly_return']}")
-        print(f"日收益率: {performance['daily_return']}")
+        performance = report.get('performance', {})
+        print(f"年化收益率: {performance.get('annual_return', '0.00%')}")
+        print(f"月化收益率: {performance.get('monthly_return', '0.00%')}")
+        print(f"日收益率: {performance.get('daily_return', '0.00%')}")
         
         print("\n" + "="*50)
         print("风险指标")
         print("="*50)
         
-        risk_metrics = report['risk_metrics']
-        print(f"最大回撤: {risk_metrics['max_drawdown']}")
-        print(f"夏普比率: {risk_metrics['sharpe_ratio']}")
-        print(f"波动率: {risk_metrics['volatility']}")
+        risk_metrics = report.get('risk_metrics', {})
+        print(f"最大回撤: {risk_metrics.get('max_drawdown', '0.00%')}")
+        print(f"夏普比率: {risk_metrics.get('sharpe_ratio', '0.00')}")
+        print(f"波动率: {risk_metrics.get('volatility', 'N/A')}")
         
         logger.info("基础回测示例完成")
         
